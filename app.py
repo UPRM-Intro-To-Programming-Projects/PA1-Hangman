@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import random
+
 app = Flask(__name__)
 
 words = ['python', 'flask', 'web', 'programming', 'hangman']
@@ -7,6 +8,7 @@ words = ['python', 'flask', 'web', 'programming', 'hangman']
 hidden_word = ''
 guessed_letters = []
 attempts = 0
+hints_remaining = 2
 
 @app.route('/')
 def home():
@@ -14,11 +16,13 @@ def home():
 
 @app.route('/hangman_game')
 def hangman_game():
-    global hidden_word, guessed_letters, attempts
+    global hidden_word, guessed_letters, attempts, hints_remaining
     hidden_word = random.choice(words)
     guessed_letters = []
     attempts = 0
-    return render_template('hangman.html', word=get_display_word(), remaining_attempts=attempts)
+    hints_remaining = 2
+    return render_template('hangman.html', word=get_display_word(),
+                           remaining_attempts=attempts, hints_remaining=hints_remaining)
 
 # TODO TASK 1
 #  Implement logic that correctly processes the hidden_word and guessed_letters and
@@ -27,7 +31,7 @@ def get_display_word():
     global hidden_word, guessed_letters
 
 # TODO TASK 2
-#  Ensure that guesses are only added if they haven’t already been guessed.
+#  Ensure that guesses are only added if they haven't already been guessed.
 #  Ensure that the function returns True for correct guesses and False for incorrect guesses.
 def check_correct_guess(input_letter):
     global guessed_letters
@@ -59,7 +63,27 @@ def guess():
     if check_win():
         return render_template('win.html', word=hidden_word)
 
-    return render_template('hangman.html', word=get_display_word(), remaining_attempts=attempts)
+    return render_template('hangman.html', word=get_display_word(),
+                           remaining_attempts=attempts, hints_remaining=hints_remaining)
+
+@app.route('/hint', methods=['POST'])
+def hint():
+    global guessed_letters, hints_remaining
+
+    # TODO TASK 5
+    #  If the player has hints remaining, collect all letters from hidden_word that haven't
+    #  been guessed yet. If any such letters exist, randomly select one, add it to guessed_letters,
+    #  and decrement hints_remaining by 1.
+
+    if check_win():
+        return render_template('win.html', word=hidden_word)
+
+    return render_template('hangman.html', word=get_display_word(),
+                           remaining_attempts=attempts, hints_remaining=hints_remaining)
+
+@app.route('/give_up', methods=['POST'])
+def give_up():
+    return render_template('lose.html', word=hidden_word)
 
 if __name__ == '__main__':
     app.run(debug=True)
